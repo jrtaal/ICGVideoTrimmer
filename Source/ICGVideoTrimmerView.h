@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 // Minimum length for the trimmed video
 @property (assign, nonatomic) CGFloat minLength;
 
+// Current start time
+@property (nonatomic) CGFloat startTime;
+
+// Current end time
+@property (nonatomic) CGFloat endTime;
+
 // Show ruler view on the trimmer view or not
 @property (assign, nonatomic) BOOL showsRulerView;
 
@@ -54,17 +60,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithAsset:(AVAsset *)asset;
-
 - (instancetype)initWithFrame:(CGRect)frame asset:(AVAsset *)asset delegate:(id<ICGVideoTrimmerDelegate>) delegate NS_DESIGNATED_INITIALIZER;
 
 - (void)resetSubviews;
 
-- (void)seekToTime:(CGFloat)startTime;
+- (void)seekToTime:(CGFloat)startTime animated:(BOOL)animated;
 
 - (void)hideTracker:(BOOL)flag;
 
--(void)setVideoBoundsToStartTime:(CGFloat)startTime endTime:(CGFloat)endTime contentOffset:(CGPoint)contentOffset;
+-(void)setVideoBoundsToStartTime:(CGFloat)startTime endTime:(CGFloat)endTime offset:(CGFloat)offset;
 
 
 @end
@@ -74,8 +78,15 @@ NS_ASSUME_NONNULL_END
 @protocol ICGVideoTrimmerDelegate <NSObject>
 
 @optional
-- (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView didChangeLeftPosition:(CGFloat)startTime rightPosition:(CGFloat)endTime contentOffset:(CGPoint)contentOffset;
+- (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView
+didChangeLeftPosition:(CGFloat)startTime
+      rightPosition:(CGFloat)endTime
+             offset:(CGFloat)offset
+          movedLeft:(BOOL)movedLEft;
+
 - (void)trimmerViewDidEndEditing:(nonnull ICGVideoTrimmerView *)trimmerView;
+
+- (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView didMoveTrackerToTime:(CGFloat)time;
 
 @end
 

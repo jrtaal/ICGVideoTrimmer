@@ -25,6 +25,7 @@
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder
 {
+    self.radius = 3.0;
     return [super initWithCoder:aDecoder];
 }
 
@@ -34,6 +35,8 @@
     if (self) {
         _color = color;
         _isRight = flag;
+        self.radius = 3.0;
+        self.backgroundColor = [UIColor clearColor];
     }
     return self;
 }
@@ -43,6 +46,8 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.thumbImage = image;
+        self.radius = 3.0;
+        self.backgroundColor = [UIColor clearColor];
     }
     return self;
 }
@@ -72,9 +77,13 @@
         
         //// Rounded Rectangle Drawing
         CGRect roundedRectangleRect = CGRectMake(CGRectGetMinX(bubbleFrame), CGRectGetMinY(bubbleFrame), CGRectGetWidth(bubbleFrame), CGRectGetHeight(bubbleFrame));
-        UIBezierPath *roundedRectanglePath = [UIBezierPath bezierPathWithRoundedRect: roundedRectangleRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerBottomLeft cornerRadii: CGSizeMake(3, 3)];
+        UIBezierPath *roundedRectanglePath;
+
         if (self.isRight) {
-            roundedRectanglePath = [UIBezierPath bezierPathWithRoundedRect: roundedRectangleRect byRoundingCorners: UIRectCornerTopRight | UIRectCornerBottomRight cornerRadii: CGSizeMake(3, 3)];
+            roundedRectanglePath = [UIBezierPath bezierPathWithRoundedRect: roundedRectangleRect byRoundingCorners: UIRectCornerTopRight | UIRectCornerBottomRight cornerRadii: CGSizeMake(self.radius, self.radius)];
+        } else {
+            roundedRectanglePath = [UIBezierPath bezierPathWithRoundedRect: roundedRectangleRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerBottomLeft cornerRadii: CGSizeMake( self.radius, self.radius )];
+
         }
         [roundedRectanglePath closePath];
         [self.color setFill];

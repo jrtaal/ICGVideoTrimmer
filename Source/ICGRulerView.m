@@ -57,7 +57,7 @@
         
         CGContextMoveToPoint(context, x, baseY);
         
-        void (^drawElement)() = ^() {
+        void (^drawElement)(void) = ^() {
             CGContextSetFillColorWithColor(context, self.themeColor.CGColor);
             if (step % multiple == 0) {
                 CGContextFillRect(context, CGRectMake(x, majorY, 1.75, majorTickLength));

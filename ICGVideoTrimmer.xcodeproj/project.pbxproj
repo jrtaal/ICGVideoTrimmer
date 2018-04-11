@@ -19,6 +19,7 @@
 		DE4F1F631A67C9BB00478F77 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE4F1F621A67C9BB00478F77 /* Images.xcassets */; };
 		DE4F1F661A67C9BB00478F77 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = DE4F1F641A67C9BB00478F77 /* LaunchScreen.xib */; };
 		DE4F1F721A67C9BB00478F77 /* ICGVideoTrimmerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DE4F1F711A67C9BB00478F77 /* ICGVideoTrimmerTests.m */; };
+		E0EA1955202F2F4700830931 /* video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E0EA1954202F2F4700830931 /* video.mp4 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		DE4F1F6B1A67C9BB00478F77 /* ICGVideoTrimmerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ICGVideoTrimmerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE4F1F701A67C9BB00478F77 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE4F1F711A67C9BB00478F77 /* ICGVideoTrimmerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICGVideoTrimmerTests.m; sourceTree = "<group>"; };
+		E0EA1954202F2F4700830931 /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				DE4F1F5C1A67C9BB00478F77 /* ViewController.h */,
 				DE4F1F5D1A67C9BB00478F77 /* ViewController.m */,
 				DE4F1F5F1A67C9BB00478F77 /* Main.storyboard */,
+				E0EA1954202F2F4700830931 /* video.mp4 */,
 				DE4F1F621A67C9BB00478F77 /* Images.xcassets */,
 				DE4F1F641A67C9BB00478F77 /* LaunchScreen.xib */,
 				DE4F1F551A67C9BB00478F77 /* Supporting Files */,
@@ -198,12 +201,12 @@
 		DE4F1F4A1A67C9BB00478F77 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = ichigo;
 				TargetAttributes = {
 					DE4F1F511A67C9BB00478F77 = {
 						CreatedOnToolsVersion = 6.1;
-						DevelopmentTeam = 56EMHUPSBR;
+						DevelopmentTeam = 39EHSCF7BK;
 					};
 					DE4F1F6A1A67C9BB00478F77 = {
 						CreatedOnToolsVersion = 6.1;
@@ -237,6 +240,7 @@
 			files = (
 				DE4F1F611A67C9BB00478F77 /* Main.storyboard in Resources */,
 				DE4F1F661A67C9BB00478F77 /* LaunchScreen.xib in Resources */,
+				E0EA1955202F2F4700830931 /* video.mp4 in Resources */,
 				DE4F1F631A67C9BB00478F77 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -310,20 +314,32 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -351,13 +367,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -365,6 +391,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -382,7 +409,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 56EMHUPSBR;
+				DEVELOPMENT_TEAM = 39EHSCF7BK;
 				INFOPLIST_FILE = ICGVideoTrimmer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tkburbidge.icgvideotrimmer;
@@ -394,7 +421,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 56EMHUPSBR;
+				DEVELOPMENT_TEAM = 39EHSCF7BK;
 				INFOPLIST_FILE = ICGVideoTrimmer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tkburbidge.icgvideotrimmer;
@@ -416,6 +443,7 @@
 				);
 				INFOPLIST_FILE = ICGVideoTrimmerTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ichigo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ICGVideoTrimmer.app/ICGVideoTrimmer";
 			};
@@ -431,6 +459,7 @@
 				);
 				INFOPLIST_FILE = ICGVideoTrimmerTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ichigo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ICGVideoTrimmer.app/ICGVideoTrimmer";
 			};

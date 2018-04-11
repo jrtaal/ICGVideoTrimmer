@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ICGThumbView : UIView
 
 @property (strong, nonatomic, nullable) UIColor *color;
+@property CGFloat radius;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 

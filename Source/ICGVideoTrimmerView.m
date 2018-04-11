@@ -1,4 +1,4 @@
-//
+ //
 //  ICGVideoTrimmerView.m
 //  ICGVideoTrimmer
 //
@@ -55,8 +55,8 @@
 @property (strong, nonatomic) UIView *topBorder;
 @property (strong, nonatomic) UIView *bottomBorder;
 
-@property (nonatomic) CGFloat startTime;
-@property (nonatomic) CGFloat endTime;
+//@property (nonatomic) CGFloat startTime;
+//@property (nonatomic) CGFloat endTime;
 
 @property (nonatomic) CGFloat widthPerSecond;
 
@@ -69,7 +69,11 @@
 
 @end
 
-@implementation ICGVideoTrimmerView
+@implementation ICGVideoTrimmerView {
+    CGFloat _startTime;
+    CGFloat _endTime;
+    AVAsset * _asset;
+}
 
 #pragma mark - Initiation
 
@@ -110,6 +114,13 @@
     self.rightThumbView.color = _themeColor;
 }
 
+-(AVAsset *)asset {
+    return _asset;
+}
+-(void)setAsset:(AVAsset *)asset {
+    _asset = asset;
+    //[self resetSubviews];
+}
 
 #pragma mark - Private methods
 
@@ -135,12 +146,12 @@
 
 - (CGFloat)borderWidth
 {
-    return _borderWidth ?: 1;
+    return _borderWidth ?: 2;
 }
 
 - (CGFloat)thumbWidth
 {
-    return _thumbWidth ?: 10;
+    return _thumbWidth ?: 15;
 }
 
 - (NSInteger) rulerLabelInterval
@@ -155,16 +166,22 @@
         }
     }
 }
+
+
+
 #define EDGE_EXTENSION_FOR_THUMB 30
 - (void)resetSubviews
 {
-    
+    CGFloat radius = 5.0;
+    self.layer.masksToBounds = true;
+    self.layer.cornerRadius = radius;
+
     CALayer *sideMaskingLayer = [CALayer new];
     sideMaskingLayer.backgroundColor = [UIColor blackColor].CGColor;
     sideMaskingLayer.frame = CGRectMake(0, -10, self.frame.size.width, self.frame.size.height + 20);
     self.layer.mask = sideMaskingLayer;
     
-    [self setBackgroundColor:[UIColor blackColor]];
+    [self setBackgroundColor:[UIColor clearColor]];
     
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     
@@ -178,6 +195,7 @@
     [self.scrollView addSubview:self.contentView];
     
     CGFloat ratio = self.showsRulerView ? 0.7 : 1.0;
+    //self.scrollView.contentInset = UIEdgeInsetsMake(0, self.thumbWidth, 0, self.thumbWidth);
     self.frameView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, 0, CGRectGetWidth(self.contentView.frame)-(2*self.thumbWidth), CGRectGetHeight(self.contentView.frame)*ratio)];
     [self.frameView.layer setMasksToBounds:YES];
     [self.contentView addSubview:self.frameView];
@@ -211,17 +229,16 @@
     } else {
         self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame color:self.themeColor right:NO];
     }
+    self.leftThumbView.radius = radius;
+
+
+    self.clipsToBounds = false;
     
-    self.trackerView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, -5, 3, CGRectGetHeight(self.frameView.frame) + 10)];
-    self.trackerView.backgroundColor = self.trackerColor;
-    self.trackerView.layer.masksToBounds = true;
-    self.trackerView.layer.cornerRadius = 2;
-    [self addSubview:self.trackerView];
     
     [self.leftThumbView.layer setMasksToBounds:YES];
     [self.leftOverlayView addSubview:self.leftThumbView];
     [self.leftOverlayView setUserInteractionEnabled:YES];
-    [self.leftOverlayView setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.8]];
+    [self.leftOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
     [self addSubview:self.leftOverlayView];
     
     // add right overlay view
@@ -234,13 +251,39 @@
     } else {
         self.rightThumbView = [[ICGThumbView alloc] initWithFrame:CGRectMake(0, 0, self.thumbWidth, CGRectGetHeight(self.frameView.frame)) color:self.themeColor right:YES];
     }
+    self.rightThumbView.radius = radius;
+
     [self.rightThumbView.layer setMasksToBounds:YES];
     [self.rightOverlayView addSubview:self.rightThumbView];
     [self.rightOverlayView setUserInteractionEnabled:YES];
-    [self.rightOverlayView setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.8]];
+    [self.rightOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
     [self addSubview:self.rightOverlayView];
     
-    
+    if (! [self.trackerColor isEqual:[UIColor clearColor]]) {
+        self.trackerView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, -5, 15, CGRectGetHeight(self.frameView.frame) + 10)];
+            //self.trackerView.backgroundColor = self.trackerColor;
+        self.trackerView.layer.masksToBounds = true;
+            //self.trackerView.layer.cornerRadius = 2;
+        [self addSubview:self.trackerView];
+
+        CALayer * lineLayer = [CALayer layer];
+        lineLayer.frame = CGRectMake(6, 0, 3, self.trackerView.frame.size.height);
+        lineLayer.backgroundColor = self.trackerColor.CGColor;
+        [self.trackerView.layer addSublayer:lineLayer];
+
+        CALayer * trackerThumbLayer = [CALayer layer];
+        trackerThumbLayer.cornerRadius = 4.0;
+        trackerThumbLayer.frame = CGRectMake(2, -3, 11,11);
+        trackerThumbLayer.backgroundColor = self.trackerColor.CGColor;
+        trackerThumbLayer.masksToBounds = true;
+        [self.trackerView.layer addSublayer:trackerThumbLayer];
+
+        UIPanGestureRecognizer * trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
+        [self.trackerView addGestureRecognizer:trackerGestureRecognizer];
+        self.trackerView.userInteractionEnabled = true;
+            //self.trackerView.layer.masksToBounds = false;
+    }
+
     UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(moveOverlayView:)];
     [self addGestureRecognizer:panGestureRecognizer];
     
@@ -255,6 +298,21 @@
     [self.bottomBorder setFrame:CGRectMake(CGRectGetMaxX(self.leftOverlayView.frame), CGRectGetHeight(self.frameView.frame)-height, CGRectGetMinX(self.rightOverlayView.frame)-CGRectGetMaxX(self.leftOverlayView.frame), height)];
 }
 
+- (void)panTracker:(UIPanGestureRecognizer*)gesture {
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+      {
+        break;
+      }
+        case UIGestureRecognizerStateChanged:
+      {
+        CGPoint dist = [gesture locationInView:self];
+        NSTimeInterval time = (dist.x - self.thumbWidth + self.scrollView.contentOffset.x) / self.widthPerSecond;
+        self.trackerView.center = CGPointMake(dist.x, self.trackerView.center.y);
+        [self.delegate trimmerView:self didMoveTrackerToTime:time];
+      }
+    }
+}
 
 - (void)moveOverlayView:(UIPanGestureRecognizer *)gesture
 {
@@ -274,61 +332,60 @@
                 self.leftStartPoint = [gesture locationInView:self];
                 _isDraggingRightOverlayView = NO;
                 _isDraggingLeftOverlayView = YES;
-                
+            } else {
+                _isDraggingLeftOverlayView = _isDraggingRightOverlayView = NO;
+                self.rightStartPoint = [gesture locationInView:self];
+                self.leftStartPoint = [gesture locationInView:self];
             }
-            
+    
         }    break;
         case UIGestureRecognizerStateChanged:
         {
-            CGPoint point = [gesture locationInView:self];
-            //------------------------------------------------------------------------------------------------------------
-            // Right
-            if (_isDraggingRightOverlayView){
-                
-                CGFloat deltaX = point.x - self.rightStartPoint.x;
-                
-                CGPoint center = self.rightOverlayView.center;
-                center.x += deltaX;
-                CGFloat newRightViewMidX = center.x;
-                CGFloat minX = CGRectGetMaxX(self.leftOverlayView.frame) + self.minLength * self.widthPerSecond;
-                CGFloat maxX = CMTimeGetSeconds([self.asset duration]) <= self.maxLength + 0.5 ? CGRectGetMaxX(self.frameView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
-                if (newRightViewMidX - self.overlayWidth/2 < minX) {
-                    newRightViewMidX = minX + self.overlayWidth/2;
-                } else if (newRightViewMidX - self.overlayWidth/2 > maxX) {
-                    newRightViewMidX = maxX + self.overlayWidth/2;
-                }
-                
-                self.rightOverlayView.center = CGPointMake(newRightViewMidX, self.rightOverlayView.center.y);
-                self.rightStartPoint = point;
-            }
-            else if (_isDraggingLeftOverlayView){
-                
-                //------------------------------------------------------------------------------------------------------------
-                // Left
-                CGFloat deltaX = point.x - self.leftStartPoint.x;
-                
-                CGPoint center = self.leftOverlayView.center;
-                center.x += deltaX;
-                CGFloat newLeftViewMidX = center.x;
-                CGFloat maxWidth = CGRectGetMinX(self.rightOverlayView.frame) - (self.minLength * self.widthPerSecond);
-                CGFloat newLeftViewMinX = newLeftViewMidX - self.overlayWidth/2;
-                if (newLeftViewMinX < self.thumbWidth - self.overlayWidth) {
-                    newLeftViewMidX = self.thumbWidth - self.overlayWidth + self.overlayWidth/2;
-                } else if (newLeftViewMinX + self.overlayWidth > maxWidth) {
-                    newLeftViewMidX = maxWidth - self.overlayWidth / 2;
-                }
-                
-                self.leftOverlayView.center = CGPointMake(newLeftViewMidX, self.leftOverlayView.center.y);
-                self.leftStartPoint = point;
-            }
-            //------------------------------------------------------------------------------------------------------------
-            
-            
-            
-            [self updateBorderFrames];
-            [self notifyDelegateOfDidChange];
-            
-            break;
+          CGPoint point = [gesture locationInView:self];
+
+              // Right
+          if (_isDraggingRightOverlayView){
+
+              CGFloat deltaX = point.x - self.rightStartPoint.x;
+
+              CGPoint center = self.rightOverlayView.center;
+              center.x += deltaX;
+              CGFloat newRightViewMidX = center.x;
+              CGFloat minX = CGRectGetMaxX(self.leftOverlayView.frame) + self.minLength * self.widthPerSecond;
+              CGFloat maxX = CMTimeGetSeconds([self.asset duration]) <= self.maxLength + 0.5 ? CGRectGetMaxX(self.frameView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
+              if (newRightViewMidX - self.overlayWidth/2 < minX) {
+                  newRightViewMidX = minX + self.overlayWidth/2;
+              } else if (newRightViewMidX - self.overlayWidth/2 > maxX) {
+                  newRightViewMidX = maxX + self.overlayWidth/2;
+              }
+
+              self.rightOverlayView.center = CGPointMake(newRightViewMidX, self.rightOverlayView.center.y);
+              self.rightStartPoint = point;
+          } else if (_isDraggingLeftOverlayView){
+
+                  // Left
+              CGFloat deltaX = point.x - self.leftStartPoint.x;
+
+              CGPoint center = self.leftOverlayView.center;
+              center.x += deltaX;
+              CGFloat newLeftViewMidX = center.x;
+              CGFloat maxWidth = CGRectGetMinX(self.rightOverlayView.frame) - (self.minLength * self.widthPerSecond);
+              CGFloat newLeftViewMinX = newLeftViewMidX - self.overlayWidth/2;
+              if (newLeftViewMinX < self.thumbWidth - self.overlayWidth) {
+                  newLeftViewMidX = self.thumbWidth - self.overlayWidth + self.overlayWidth/2;
+              } else if (newLeftViewMinX + self.overlayWidth > maxWidth) {
+                  newLeftViewMidX = maxWidth - self.overlayWidth / 2;
+              }
+
+              self.leftOverlayView.center = CGPointMake(newLeftViewMidX, self.leftOverlayView.center.y);
+              self.leftStartPoint = point;
+          }
+
+          if (_isDraggingLeftOverlayView || _isDraggingRightOverlayView) {
+              [self updateBorderFrames];
+              [self notifyDelegateOfDidChange];
+          }
+          break;
         }
         case UIGestureRecognizerStateEnded:
         {
@@ -341,34 +398,28 @@
 }
 
 
-- (void)seekToTime:(CGFloat) time
+- (void)seekToTime:(CGFloat) time animated:(BOOL)animated
 {
     CGFloat duration = fabs(_prevTrackerTime - time);
-    BOOL animate = (duration>1) ?  NO : YES;
     _prevTrackerTime = time;
     
-    
     CGFloat posToMove = time * self.widthPerSecond + self.thumbWidth - self.scrollView.contentOffset.x;
-    
-    CGRect trackerFrame = self.trackerView.frame;
-    trackerFrame.origin.x = posToMove;
-    if (animate){
+    CGFloat y = self.trackerView.center.y;
+    if (animated){
         [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.trackerView.frame = trackerFrame;
+            self.trackerView.center = CGPointMake(posToMove, y);
         } completion:nil ];
     }
     else{
-        self.trackerView.frame = trackerFrame;
+        self.trackerView.center = CGPointMake(posToMove, y);
     }
-    
 }
 
 - (void)hideTracker:(BOOL)flag
 {
-    if ( flag == YES ){
+    if ( flag == YES ) {
         self.trackerView.hidden = YES;
-    }
-    else{
+    } else {
         self.trackerView.alpha = 0;
         self.trackerView.hidden = NO;
         [UIView animateWithDuration:.3 animations:^{
@@ -377,11 +428,43 @@
     }
 }
 
--(void)setVideoBoundsToStartTime:(CGFloat)startTime endTime:(CGFloat)endTime contentOffset:(CGPoint)contentOffset
+-(CGFloat)startTime {
+    return _startTime;
+}
+
+-(void)setStartTime:(CGFloat)startTime {
+    _startTime = startTime;
+
+    CGFloat x = startTime * self.widthPerSecond - self.thumbWidth;
+    self.scrollView.contentOffset = CGPointMake(x, 0.0);
+    float newLeftOverlayViewMidX = [self getMiddleXPointForLeftOverlayViewWithTime:startTime];
+    self.leftOverlayView.center = CGPointMake(newLeftOverlayViewMidX, self.leftOverlayView.center.y);
+
+    [self notifyDelegateOfDidChange];
+}
+
+-(CGFloat)endTime {
+    return _endTime;
+}
+
+-(void)setEndTime:(CGFloat)endTime {
+    _endTime = endTime;
+    float newRightOverlayVideMidX = [self getMiddleXPointForRightOverlayViewWithTime:endTime];
+    self.rightOverlayView.center = CGPointMake(newRightOverlayVideMidX, self.rightOverlayView.center.y);
+    [self notifyDelegateOfDidChange];
+}
+
+-(void)setVideoBoundsToStartTime:(CGFloat)startTime
+                         endTime:(CGFloat)endTime
+                          offset:(CGFloat)offset
 {     //Validating the inputs.
+
     if(startTime < 0 || endTime < 0 || startTime>=endTime || endTime>CMTimeGetSeconds([self.asset duration]) || (endTime-startTime)<self.minLength || (endTime-startTime)>self.maxLength)
         return;
-    self.scrollView.contentOffset = contentOffset;
+    _startTime = startTime;
+    _endTime = endTime;
+
+    self.scrollView.contentOffset = CGPointMake(offset, 0.0);
     float newLeftOverlayViewMidX = [self getMiddleXPointForLeftOverlayViewWithTime:startTime];
     self.leftOverlayView.center = CGPointMake(newLeftOverlayViewMidX, self.leftOverlayView.center.y);
     
@@ -409,9 +492,7 @@
     } else if (newLeftViewMinX + _overlayWidth > maxWidth) {
         newLeftViewMidX = maxWidth - _overlayWidth / 2;
     }
-    if (!self.trackerView.hidden && time != self.startTime) {
-        [self seekToTime:time];
-    }
+
     return newLeftViewMidX;
     
 }
@@ -439,28 +520,30 @@
 
 - (void)notifyDelegateOfDidChange
 {
-    //    NSLog(@"leftOverlayView:%f , rightOverlayView:%f contentOffset.x:%@", CGRectGetMaxX(self.leftOverlayView.frame) , CGRectGetMaxX(self.rightOverlayView.frame) , @(self.scrollView.contentOffset.x));
+    //  NSLog(@"leftOverlayView:%f , rightOverlayView:%f contentOffset.x:%@", CGRectGetMaxX(self.leftOverlayView.frame) , CGRectGetMaxX(self.rightOverlayView.frame) , @(self.scrollView.contentOffset.x));
     
     
     CGFloat start = CGRectGetMaxX(self.leftOverlayView.frame) / self.widthPerSecond + (self.scrollView.contentOffset.x -self.thumbWidth) / self.widthPerSecond;
     CGFloat end = CGRectGetMinX(self.rightOverlayView.frame) / self.widthPerSecond + (self.scrollView.contentOffset.x - self.thumbWidth) / self.widthPerSecond;
+
     
-    if (!self.trackerView.hidden && start != self.startTime) {
-        [self seekToTime:start];
-    }
-    
-    if (start==self.startTime && end==self.endTime){
+    if (start==_startTime && end==_endTime){
         // thumb events may fire multiple times with the same value, so we detect them and ignore them.
         //        NSLog(@"no change");
         return;
     }
+    BOOL movedLeft = (end == _endTime);
     
-    self.startTime = start;
-    self.endTime = end;
+    _startTime = start;
+    _endTime = end;
     
-    if([self.delegate respondsToSelector:@selector(trimmerView:didChangeLeftPosition:rightPosition:contentOffset:)])
+    if([self.delegate respondsToSelector:@selector(trimmerView:didChangeLeftPosition:rightPosition:offset:movedLeft:)])
     {
-        [self.delegate trimmerView:self didChangeLeftPosition:self.startTime rightPosition:self.endTime contentOffset:self.scrollView.contentOffset];
+        [self.delegate trimmerView:self
+             didChangeLeftPosition:_startTime
+                     rightPosition:_endTime
+                            offset:self.scrollView.contentOffset.x
+                         movedLeft:movedLeft];
     }
 }
 
@@ -474,6 +557,8 @@
 
 - (void)addFrames
 {
+    if (! self.asset)
+        return;
     self.imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:self.asset];
     self.imageGenerator.appliesPreferredTrackTransform = YES;
     if ([self isRetina]){
@@ -509,7 +594,7 @@
     NSInteger actualFramesNeeded;
     
     CGFloat factor = (duration / self.maxLength);
-    factor = (factor < 1 ? 1 : factor);
+    factor = (factor < 1.0 ? 1.0 : factor);
     CGFloat frameViewFrameWidth = factor * screenWidth;
     [self.frameView setFrame:CGRectMake(self.thumbWidth, 0, frameViewFrameWidth, CGRectGetHeight(self.frameView.frame))];
     CGFloat contentViewFrameWidth = CMTimeGetSeconds([self.asset duration]) <= self.maxLength + 0.5 ? self.bounds.size.width : frameViewFrameWidth + 2*self.thumbWidth;
@@ -523,7 +608,7 @@
     
     int preferredWidth = 0;
     NSMutableArray *times = [[NSMutableArray alloc] init];
-    for (int i=1; i<actualFramesNeeded; i++){
+    for (int i=1; i<actualFramesNeeded; i++) {
         
         CMTime time = CMTimeMakeWithSeconds(i*durationPerFrame, 600);
         [times addObject:[NSValue valueWithCMTime:time]];
@@ -544,8 +629,6 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.frameView addSubview:tmp];
         });
-        
-        
     }
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
