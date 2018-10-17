@@ -588,7 +588,7 @@
         picWidth = tmp.frame.size.width;
         CGImageRelease(halfWayImage);
     } else {
-        return
+        return;
     }
     
     Float64 duration = CMTimeGetSeconds([self.asset duration]);
