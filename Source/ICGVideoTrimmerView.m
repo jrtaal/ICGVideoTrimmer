@@ -587,6 +587,8 @@
         [self.frameView addSubview:tmp];
         picWidth = tmp.frame.size.width;
         CGImageRelease(halfWayImage);
+    } else {
+        return
     }
     
     Float64 duration = CMTimeGetSeconds([self.asset duration]);
