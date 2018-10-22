@@ -561,11 +561,9 @@
         return;
     self.imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:self.asset];
     self.imageGenerator.appliesPreferredTrackTransform = YES;
-    if ([self isRetina]){
-        self.imageGenerator.maximumSize = CGSizeMake(CGRectGetWidth(self.frameView.frame)*2, CGRectGetHeight(self.frameView.frame)*2);
-    } else {
-        self.imageGenerator.maximumSize = CGSizeMake(CGRectGetWidth(self.frameView.frame), CGRectGetHeight(self.frameView.frame));
-    }
+    CGFloat scale = [UIScreen mainScreen].scale;
+    self.imageGenerator.maximumSize = CGSizeMake(CGRectGetWidth(self.frameView.frame) * scale,
+                                                 CGRectGetHeight(self.frameView.frame) * scale);
     
     CGFloat picWidth = 0;
     
@@ -574,11 +572,8 @@
     CMTime actualTime;
     CGImageRef halfWayImage = [self.imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:&actualTime error:&error];
     UIImage *videoScreen;
-    if ([self isRetina]){
-        videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage scale:2.0 orientation:UIImageOrientationUp];
-    } else {
-        videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage];
-    }
+    videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage scale:scale orientation:UIImageOrientationUp];
+    
     if (halfWayImage != NULL) {
         UIImageView *tmp = [[UIImageView alloc] initWithImage:videoScreen];
         CGRect rect = tmp.frame;
@@ -650,15 +645,9 @@
                     }
                     
                 }
-                if(tag > 0){
-                    
-                    
+                if (tag > 0) {
                     UIImage *screen;
-                    if ([self isRetina]){
-                        screen = [[UIImage alloc] initWithCGImage:cgImageRef scale:2.0 orientation:UIImageOrientationUp];
-                    } else {
-                        screen = [[UIImage alloc] initWithCGImage:cgImageRef];
-                    }
+                    screen = [[UIImage alloc] initWithCGImage:cgImageRef scale:scale orientation:UIImageOrientationUp];
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         UIImageView *imageView = (UIImageView *)[self.frameView viewWithTag:tag];
@@ -668,33 +657,9 @@
                 }
             }
         }];
-        //        for (int i=1; i<=[times count]; i++) {
-        //            CMTime time = [((NSValue *)[times objectAtIndex:i-1]) CMTimeValue];
-        //
-        //            CGImageRef halfWayImage = [self.imageGenerator copyCGImageAtTime:time actualTime:NULL error:NULL];
-        //
-        //            UIImage *videoScreen;
-        //            if ([self isRetina]){
-        //                videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage scale:2.0 orientation:UIImageOrientationUp];
-        //            } else {
-        //                videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage];
-        //            }
-        //
-        //            CGImageRelease(halfWayImage);
-        //            dispatch_async(dispatch_get_main_queue(), ^{
-        //                UIImageView *imageView = (UIImageView *)[self.frameView viewWithTag:i];
-        //                [imageView setImage:videoScreen];
-        //
-        //            });
-        //        }
     });
 }
 
-- (BOOL)isRetina
-{
-    return ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] &&
-            ([UIScreen mainScreen].scale > 1.0));
-}
 
 #pragma mark - UIScrollViewDelegate
 
