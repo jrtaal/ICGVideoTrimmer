@@ -43,6 +43,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    //NSURL * url = [NSURL fileURLWithPath:@"/private/var/mobile/Containers/Data/Application/CCC87872-3689-45CC-883F-DF113BF31CEE/tmp/57452767-173A-4613-8FD3-DDB3BF9EA122.MOV"];
+    // NSURL * url = [[NSBundle mainBundle] URLForResource:@"video" withExtension:@"mp4"];
+    self.asset = nil; //[AVAsset assetWithURL:url];
+
     self.tempVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"tmpMov.mov"];
 
     self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:nil];
@@ -62,10 +66,8 @@
 
 -(void)viewDidAppear:(BOOL)animated{
     [super  viewDidAppear:animated];
-    self.asset = [AVAsset assetWithURL:[[NSBundle mainBundle] URLForResource:@"video" withExtension:@"mp4"]];
-    //self.asset = [AVURLAsset assetWithURL:[NSURL URLWithStrin];
-    [self loadAsset];
-
+    if (self.asset)
+        [self loadAsset];
 }
 
 #pragma mark - ICGVideoTrimmerDelegate
@@ -73,7 +75,8 @@
 - (void)trimmerView:(ICGVideoTrimmerView *)trimmerView
 didChangeLeftPosition:(CGFloat)startTime
       rightPosition:(CGFloat)endTime
-      offset:(CGFloat)offset {
+             offset:(CGFloat)offset
+          movedLeft:(BOOL)movedLEft{
 
     _restartOnPlay = YES;
     [self.player pause];
@@ -96,6 +99,15 @@ didChangeLeftPosition:(CGFloat)startTime
 }
 
 
+-(void)trimmerView:(ICGVideoTrimmerView *)trimmerView didMoveTrackerToTime:(CGFloat)time {
+    self.infoLabel.text = [NSString stringWithFormat:@"Time: %5.2f", time];
+    
+    [self seekVideoToPos:time];
+}
+
+-(void) updateInfoStart:(double)start end:(double)end offset:(double)off {
+    self.infoLabel.text = [NSString stringWithFormat:@"start: % 5.2f end: % 5.2f. D % 5.2f, O % 5.2f", start, end, end-start, off];
+}
 #pragma mark - UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
@@ -103,7 +115,7 @@ didChangeLeftPosition:(CGFloat)startTime
     [picker dismissViewControllerAnimated:YES completion:nil];
     NSURL *url = [info objectForKey:UIImagePickerControllerMediaURL];
     self.asset = [AVAsset assetWithURL:url];
-    [self loadAsset];
+    //[self loadAsset]; will be called on viewdidappear
 }
 
 -(void)loadAsset {
@@ -112,9 +124,8 @@ didChangeLeftPosition:(CGFloat)startTime
     self.player = [AVPlayer playerWithPlayerItem:item];
     self.player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
     self.playerLayer.player = self.player;
+    
     self.videoPlaybackPosition = 0;
-
-
 
     // set properties for trimmer view
     [self.trimmerView setThemeColor:[UIColor lightGrayColor]];
@@ -125,18 +136,20 @@ didChangeLeftPosition:(CGFloat)startTime
     [self.trimmerView setDelegate:self];
     CGFloat duration_seconds = CMTimeGetSeconds(self.asset.duration);
 
-    self.trimmerView.maxLength = 17.5;
-    self.trimmerView.minLength = 6.0;
+    self.trimmerView.maxDuration = 17.5;
+    self.trimmerView.minDuration = 6.0;
     [self.trimmerView hideTracker:false];
     // important: reset subviews
     [self.trimmerView resetSubviews];
     self.trimmerView.endTime = duration_seconds;
-    self.trimmerView.startTime = MAX(0.0, duration_seconds - 15.0);
+    self.stopTime = duration_seconds;
+    self.trimmerView.startTime = 0.0; // MAX(0.0, duration_seconds - 15.0);
     //[self.trimmerView setVideoBoundsToStartTime:duration_seconds-12.0
     //                                    endTime:duration_seconds
     //                                     offset:0.0];
     [self.trimButton setHidden:NO];
     [self.changePositionButton setHidden:NO];
+    [self start];
 }
 
 
@@ -264,26 +277,43 @@ didChangeLeftPosition:(CGFloat)startTime
     }
 }
 
+-(void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    [self.view setNeedsLayout];
+}
 - (void)viewDidLayoutSubviews
 {
+    [super viewDidLayoutSubviews];
     self.playerLayer.frame = CGRectMake(0, 0, self.videoLayer.frame.size.width, self.videoLayer.frame.size.height);
 }
 
 - (void)tapOnVideoLayer:(UITapGestureRecognizer *)tap
 {
-    if (self.isPlaying) {
-        [self.player pause];
-        [self stopPlaybackTimeChecker];
-    }else {
-        if (_restartOnPlay){
-            [self seekVideoToPos: self.startTime];
-            [self.trimmerView seekToTime:self.startTime animated:false];
-            _restartOnPlay = NO;
+    if (tap.state == UIGestureRecognizerStateEnded) {
+        if (self.isPlaying) {
+            [self stop];
+        } else {
+            [self start];
         }
+    }
+}
+-(void)start {
+    if (_restartOnPlay){
+        [self seekVideoToPos: self.startTime];
+        [self.trimmerView seekToTime:self.startTime animated:false];
+        _restartOnPlay = NO;
+    }
+    if (self.asset) {
         [self.player play];
+        
         [self startPlaybackTimeChecker];
     }
+}
 
+-(void)stop {
+    [self.player pause];
+    [self stopPlaybackTimeChecker];
 }
 
 -(BOOL)isPlaying {
@@ -333,11 +363,4 @@ didChangeLeftPosition:(CGFloat)startTime
     [self.player seekToTime:time toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
 }
 
--(void)trimmerView:(ICGVideoTrimmerView *)trimmerView didMoveTrackerToTime:(CGFloat)time {
-    [self seekVideoToPos:time];
-}
-
--(void) updateInfoStart:(double)start end:(double)end offset:(double)off {
-    self.infoLabel.text = [NSString stringWithFormat:@"start: % 5.2f end: % 5.2f. D % 5.2f, O % 5.2f", start, end, end-start, off];
-}
 @end

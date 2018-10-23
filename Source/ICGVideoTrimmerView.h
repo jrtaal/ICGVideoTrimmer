@@ -22,10 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) UIColor *themeColor;
 
 // Maximum length for the trimmed video
-@property (assign, nonatomic) CGFloat maxLength;
+@property (assign, nonatomic) CGFloat maxDuration;
 
 // Minimum length for the trimmed video
-@property (assign, nonatomic) CGFloat minLength;
+@property (assign, nonatomic) CGFloat minDuration;
 
 // Current start time
 @property (nonatomic) CGFloat startTime;
