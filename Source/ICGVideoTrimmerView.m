@@ -452,8 +452,8 @@
 -(void)setStartTime:(CGFloat)startTime {
     _startTime = startTime;
 
-    CGFloat x = startTime * self.widthPerSecond - self.thumbWidth;
-    //self.scrollView.contentOffset = CGPointMake(x, 0.0);
+    CGFloat x = startTime * self.widthPerSecond;
+    self.scrollView.contentOffset = CGPointMake(x, 0.0);
     float newLeftOverlayViewMidX = [self getMiddleXPointForLeftOverlayViewWithTime:startTime];
     self.leftOverlayView.center = CGPointMake(newLeftOverlayViewMidX, self.leftOverlayView.center.y);
 
