@@ -494,7 +494,7 @@
 
 -(float)getMiddleXPointForLeftOverlayViewWithTime:(float)time
 {
-    CGFloat leftOverlayViewNewX = ((((self.scrollView.contentOffset.x -self.thumbWidth) / self.widthPerSecond) - time)* self.widthPerSecond)*-1 ;
+    CGFloat leftOverlayViewNewX = [self timeToOffset:time];
     
     CGFloat leftOverlayViewOldX = CGRectGetMaxX(self.leftOverlayView.frame);
     
@@ -516,7 +516,7 @@
 }
 -(float)getMiddleXPointForRightOverlayViewWithTime:(float)time
 {
-    CGFloat rightOverlayViewNewX = ((((self.scrollView.contentOffset.x -self.thumbWidth) / self.widthPerSecond) - time)* self.widthPerSecond)*-1 ;
+    CGFloat rightOverlayViewNewX = [self timeToOffset:time];
     
     CGFloat rightOverlayViewOldX = CGRectGetMinX(self.rightOverlayView.frame);
     
@@ -538,12 +538,9 @@
 
 - (void)notifyDelegateOfDidChange
 {
-    //  NSLog(@"leftOverlayView:%f , rightOverlayView:%f contentOffset.x:%@", CGRectGetMaxX(self.leftOverlayView.frame) , CGRectGetMaxX(self.rightOverlayView.frame) , @(self.scrollView.contentOffset.x));
     
-    
-    CGFloat start = CGRectGetMaxX(self.leftOverlayView.frame) / self.widthPerSecond + (self.scrollView.contentOffset.x -self.thumbWidth) / self.widthPerSecond;
-    CGFloat end = CGRectGetMinX(self.rightOverlayView.frame) / self.widthPerSecond + (self.scrollView.contentOffset.x - self.thumbWidth) / self.widthPerSecond;
-
+    CGFloat start = [self offsetToTime:CGRectGetMaxX(self.leftOverlayView.frame)];
+    CGFloat end = [self offsetToTime:CGRectGetMinX(self.rightOverlayView.frame)];
     
     if (start==_startTime && end==_endTime){
         // thumb events may fire multiple times with the same value, so we detect them and ignore them.
@@ -573,11 +570,11 @@
     }
 }
 
--(NSTimeInterval)timeToOffset:(CGFloat) time {
+-(CGFloat)timeToOffset:(NSTimeInterval) time {
     return time * self.widthPerSecond + self.thumbWidth - self.scrollView.contentOffset.x;
 }
 
--(CGFloat)offsetToTime:(NSTimeInterval) offset {
+-(NSTimeInterval)offsetToTime:(CGFloat) offset {
     return (offset - self.thumbWidth + self.scrollView.contentOffset.x) / self.widthPerSecond;
 }
 
