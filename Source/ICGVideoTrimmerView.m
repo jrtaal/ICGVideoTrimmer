@@ -67,12 +67,15 @@
 @property (nonatomic) CGFloat prevTrackerTime;
 
 
+
 @end
 
 @implementation ICGVideoTrimmerView {
     CGFloat _startTime;
     CGFloat _endTime;
     AVAsset * _asset;
+    BOOL _panningTracker;
+    UIPanGestureRecognizer * _trackerGestureRecognizer;
 }
 
 #pragma mark - Initiation
@@ -284,8 +287,11 @@
         trackerThumbLayer.masksToBounds = true;
         [self.trackerView.layer addSublayer:trackerThumbLayer];
 
-        UIPanGestureRecognizer * trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
-        [self.trackerView addGestureRecognizer:trackerGestureRecognizer];
+        _trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
+        for (UIGestureRecognizer * rec in self.trackerView.gestureRecognizers) {
+            [self.trackerView removeGestureRecognizer:rec];
+        }
+        [self.trackerView addGestureRecognizer:_trackerGestureRecognizer];
         self.trackerView.userInteractionEnabled = true;
             //self.trackerView.layer.masksToBounds = false;
     }
@@ -310,6 +316,7 @@
     
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
+            _panningTracker = true;
             break;
             
         case UIGestureRecognizerStateChanged: {
@@ -322,6 +329,9 @@
             self.trackerView.center = CGPointMake(offset, self.trackerView.center.y);
             [self.delegate trimmerView:self didMoveTrackerToTime:time];
             break;
+        }
+        case UIGestureRecognizerStateEnded: {
+            _panningTracker = false;
         }
             
         default:
@@ -417,20 +427,23 @@
 
 - (void)seekToTime:(CGFloat) time animated:(BOOL)animated
 {
-    CGFloat duration = fabs(_prevTrackerTime - time);
-    _prevTrackerTime = time;
-    
-    CGFloat posToMove = time * self.widthPerSecond + self.thumbWidth - self.scrollView.contentOffset.x;
-    CGFloat y = self.trackerView.center.y;
-    if (animated){
-        [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
+    if (!_panningTracker) {
+        CGFloat duration = fabs(_prevTrackerTime - time);
+        _prevTrackerTime = time;
+        
+        CGFloat posToMove = time * self.widthPerSecond + self.thumbWidth - self.scrollView.contentOffset.x;
+        CGFloat y = self.trackerView.center.y;
+        if (animated){
+            [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
+                self.trackerView.center = CGPointMake(posToMove, y);
+            } completion:nil ];
+        }
+        else{
             self.trackerView.center = CGPointMake(posToMove, y);
-        } completion:nil ];
-    }
-    else{
-        self.trackerView.center = CGPointMake(posToMove, y);
+        }
     }
 }
+
 
 - (void)hideTracker:(BOOL)flag
 {

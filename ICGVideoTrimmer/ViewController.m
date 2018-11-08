@@ -44,8 +44,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     //NSURL * url = [NSURL fileURLWithPath:@"/private/var/mobile/Containers/Data/Application/CCC87872-3689-45CC-883F-DF113BF31CEE/tmp/57452767-173A-4613-8FD3-DDB3BF9EA122.MOV"];
-    // NSURL * url = [[NSBundle mainBundle] URLForResource:@"video" withExtension:@"mp4"];
-    self.asset = nil; //[AVAsset assetWithURL:url];
+     NSURL * url = [[NSBundle mainBundle] URLForResource:@"video" withExtension:@"mp4"];
+    self.asset = [AVAsset assetWithURL:url];
 
     self.tempVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"tmpMov.mov"];
 
