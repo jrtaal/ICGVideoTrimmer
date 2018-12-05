@@ -269,23 +269,11 @@
     [self addSubview:self.rightOverlayView];
     
     if (! [self.trackerColor isEqual:[UIColor clearColor]]) {
-        self.trackerView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, -5, 15, CGRectGetHeight(self.framesView.frame) + 10)];
-            //self.trackerView.backgroundColor = self.trackerColor;
+        self.trackerView = [[UIView alloc] initWithFrame:CGRectMake(0, -5, self.thumbWidth, CGRectGetHeight(self.framesView.frame) + 10)];
+            self.trackerView.backgroundColor = self.trackerColor;
         self.trackerView.layer.masksToBounds = true;
             //self.trackerView.layer.cornerRadius = 2;
         [self addSubview:self.trackerView];
-
-        CALayer * lineLayer = [CALayer layer];
-        lineLayer.frame = CGRectMake(6, 0, 3, self.trackerView.frame.size.height);
-        lineLayer.backgroundColor = self.trackerColor.CGColor;
-        [self.trackerView.layer addSublayer:lineLayer];
-
-        CALayer * trackerThumbLayer = [CALayer layer];
-        trackerThumbLayer.cornerRadius = 4.0;
-        trackerThumbLayer.frame = CGRectMake(2, -3, 11,11);
-        trackerThumbLayer.backgroundColor = self.trackerColor.CGColor;
-        trackerThumbLayer.masksToBounds = true;
-        [self.trackerView.layer addSublayer:trackerThumbLayer];
 
         _trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
         for (UIGestureRecognizer * rec in self.trackerView.gestureRecognizers) {
