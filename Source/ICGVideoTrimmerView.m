@@ -46,6 +46,8 @@
 @property (strong, nonatomic) HitTestView *rightOverlayView;
 @property (strong, nonatomic) ICGThumbView *leftThumbView;
 @property (strong, nonatomic) ICGThumbView *rightThumbView;
+@property (strong, nonatomic) ICGRulerView *rulerView;
+
 
 @property (assign, nonatomic) BOOL isDraggingRightOverlayView;
 @property (assign, nonatomic) BOOL isDraggingLeftOverlayView;
@@ -53,24 +55,21 @@
 @property (strong, nonatomic) UIView *topBorder;
 @property (strong, nonatomic) UIView *bottomBorder;
 
-//@property (nonatomic) CGFloat startTime;
-//@property (nonatomic) CGFloat endTime;
-
 @property (nonatomic) CGFloat widthPerSecond;
 
 @property (nonatomic) CGPoint leftStartPoint;
 @property (nonatomic) CGPoint rightStartPoint;
 @property (nonatomic) CGFloat overlayWidth;
 
-@property (nonatomic) CGFloat prevTrackerTime;
+@property (nonatomic) NSTimeInterval prevTrackerTime;
 
 
 
 @end
 
 @implementation ICGVideoTrimmerView {
-    CGFloat _startTime;
-    CGFloat _endTime;
+    NSTimeInterval _startTime;
+    NSTimeInterval _endTime;
     AVAsset * _asset;
     BOOL _panningTracker;
 }
@@ -137,7 +136,7 @@
     self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame))];
     [self.scrollView setContentSize:self.contentView.frame.size];
     [self.scrollView addSubview:self.contentView];
-
+    
     // add borders
     self.topBorder = [[UIView alloc] init];
     [self.topBorder setBackgroundColor:self.themeColor];
@@ -223,11 +222,6 @@
 }
 #pragma mark - Private methods
 
-//- (UIColor *)themeColor
-//{
-//    return _themeColor ?: [UIColor lightGrayColor];
-//}
-
 
 -(void) didMoveToWindow {
     [super didMoveToWindow]; // (does nothing by default)
@@ -253,7 +247,7 @@
     self.contentView.frame = CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame));
     
     [self.framesView removeFromSuperview];
-    CGFloat ratio = self.showsRulerView ? 0.7 : 1.0;
+    double ratio = self.showsRulerView ? 0.7 : 1.0;
     //self.scrollView.contentInset = UIEdgeInsetsMake(0, self.thumbWidth, 0, self.thumbWidth);
     self.framesView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, 0, CGRectGetWidth(self.contentView.frame)-(2*self.thumbWidth), CGRectGetHeight(self.contentView.frame)*ratio)];
     [self.framesView.layer setMasksToBounds:YES];
@@ -262,11 +256,11 @@
     [self addFrames];
     
     if (self.showsRulerView) {
+        [self.rulerView removeFromSuperview];
         CGRect rulerFrame = CGRectMake(0, CGRectGetHeight(self.contentView.frame)*0.7, CGRectGetWidth(self.contentView.frame)+self.thumbWidth, CGRectGetHeight(self.contentView.frame)*0.3);
-        ICGRulerView *rulerView = [[ICGRulerView alloc] initWithFrame:rulerFrame widthPerSecond:self.widthPerSecond themeColor:self.themeColor labelInterval:self.rulerLabelInterval];
-        [self.contentView addSubview:rulerView];
+        self.rulerView = [[ICGRulerView alloc] initWithFrame:rulerFrame widthPerSecond:self.widthPerSecond themeColor:self.themeColor labelInterval:self.rulerLabelInterval];
+        [self.contentView addSubview:self.rulerView];
     }
-    
     
     // width for left and right overlay views
     self.overlayWidth =  CGRectGetWidth(self.frame) - (self.minDuration * self.widthPerSecond);
@@ -406,11 +400,10 @@
     }
 }
 
-
-- (void)seekToTime:(CGFloat) time animated:(BOOL)animated
+- (void)seekToTime:(NSTimeInterval) time animated:(BOOL)animated
 {
     if (!_panningTracker) {
-        CGFloat duration = fabs(_prevTrackerTime - time);
+        NSTimeInterval duration = fabs(_prevTrackerTime - time);
         _prevTrackerTime = time;
         
         CGFloat posToMove = time * self.widthPerSecond + self.thumbWidth - self.scrollView.contentOffset.x;
@@ -440,11 +433,11 @@
     }
 }
 
--(CGFloat)startTime {
+-(NSTimeInterval)startTime {
     return _startTime;
 }
 
--(void)setStartTime:(CGFloat)startTime {
+-(void)setStartTime:(NSTimeInterval)startTime {
     _startTime = startTime;
 
     CGFloat x = startTime * self.widthPerSecond;
@@ -455,23 +448,26 @@
     [self notifyDelegateOfDidChange];
 }
 
--(CGFloat)endTime {
+-(NSTimeInterval)endTime {
     return _endTime;
 }
 
--(void)setEndTime:(CGFloat)endTime {
+-(void)setEndTime:(NSTimeInterval)endTime {
     _endTime = endTime;
     float newRightOverlayVideMidX = [self getMiddleXPointForRightOverlayViewWithTime:endTime];
     self.rightOverlayView.center = CGPointMake(newRightOverlayVideMidX, self.rightOverlayView.center.y);
     [self notifyDelegateOfDidChange];
 }
 
--(void)setVideoBoundsToStartTime:(CGFloat)startTime
-                         endTime:(CGFloat)endTime
-                          offset:(CGFloat)offset
+-(void)setVideoBoundsToStartTime:(NSTimeInterval)startTime
+                         endTime:(NSTimeInterval)endTime
+                          offset:(NSTimeInterval)offset
 {     //Validating the inputs.
 
-    if(startTime < 0 || endTime < 0 || startTime>=endTime || endTime>CMTimeGetSeconds([self.asset duration]) || (endTime-startTime)<self.minDuration || (endTime-startTime)>self.maxDuration)
+    if (startTime < 0 || endTime < 0 || startTime >= endTime ||
+        endTime > CMTimeGetSeconds([self.asset duration]) ||
+        (endTime - startTime) < self.minDuration ||
+        (endTime - startTime) > self.maxDuration)
         return;
     _startTime = startTime;
     _endTime = endTime;
@@ -487,8 +483,8 @@
 }
 
 
--(float)getMiddleXPointForLeftOverlayViewWithTime:(float)time
-{
+-(CGFloat)getMiddleXPointForLeftOverlayViewWithTime:(NSTimeInterval)time {
+
     CGFloat leftOverlayViewNewX = [self timeToOffset:time];
     
     CGFloat leftOverlayViewOldX = CGRectGetMaxX(self.leftOverlayView.frame);
@@ -509,7 +505,7 @@
     return newLeftViewMidX;
     
 }
--(float)getMiddleXPointForRightOverlayViewWithTime:(float)time
+-(CGFloat)getMiddleXPointForRightOverlayViewWithTime:(NSTimeInterval)time
 {
     CGFloat rightOverlayViewNewX = [self timeToOffset:time];
     
@@ -534,8 +530,8 @@
 - (void)notifyDelegateOfDidChange
 {
     
-    CGFloat start = [self offsetToTime:CGRectGetMaxX(self.leftOverlayView.frame)];
-    CGFloat end = [self offsetToTime:CGRectGetMinX(self.rightOverlayView.frame)];
+    NSTimeInterval start = [self offsetToTime:CGRectGetMaxX(self.leftOverlayView.frame)];
+    NSTimeInterval end = [self offsetToTime:CGRectGetMinX(self.rightOverlayView.frame)];
     
     if (start==_startTime && end==_endTime){
         // thumb events may fire multiple times with the same value, so we detect them and ignore them.
@@ -602,7 +598,7 @@
     Float64 duration = CMTimeGetSeconds([self.asset duration]);
     CGFloat allFramesWidth = CGRectGetWidth(self.frame) - 2 * self.thumbWidth; // quick fix to make up for the width of thumb views
     
-    CGFloat temporalFactor = MAX(1.0, (duration / self.maxDuration));
+    double temporalFactor = MAX(1.0, (duration / self.maxDuration));
     CGFloat frameViewFrameWidth = temporalFactor * allFramesWidth;
     self.widthPerSecond = frameViewFrameWidth / duration;
 

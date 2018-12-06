@@ -22,16 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) UIColor *themeColor;
 
 // Maximum length for the trimmed video
-@property (nonatomic) CGFloat maxDuration;
+@property (nonatomic) NSTimeInterval maxDuration;
 
 // Minimum length for the trimmed video
-@property (nonatomic) CGFloat minDuration;
+@property (nonatomic) NSTimeInterval minDuration;
 
 // Current start time
-@property (nonatomic) CGFloat startTime;
+@property (nonatomic) NSTimeInterval startTime;
 
 // Current end time
-@property (nonatomic) CGFloat endTime;
+@property (nonatomic) NSTimeInterval endTime;
 
 // Show ruler view on the trimmer view or not
 @property (nonatomic) BOOL showsRulerView;
@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Tracker view
 @property (readonly, nonatomic) UIView *trackerView;
 
+
 @property (weak, nonatomic, nullable) id<ICGVideoTrimmerDelegate> delegate;
 
 
@@ -68,30 +69,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetSubviews;
 
-- (void)seekToTime:(CGFloat)startTime animated:(BOOL)animated;
+- (void)seekToTime:(NSTimeInterval)startTime animated:(BOOL)animated;
 
 - (void)hideTracker:(BOOL)flag;
 
--(void)setVideoBoundsToStartTime:(CGFloat)startTime endTime:(CGFloat)endTime offset:(CGFloat)offset;
+- (void)setVideoBoundsToStartTime:(NSTimeInterval)startTime endTime:(NSTimeInterval)endTime offset:(NSTimeInterval)offset;
 
 
 @end
-
-NS_ASSUME_NONNULL_END
 
 @protocol ICGVideoTrimmerDelegate <NSObject>
 
 @optional
 - (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView
-didChangeLeftPosition:(CGFloat)startTime
-      rightPosition:(CGFloat)endTime
-             offset:(CGFloat)offset
-          movedLeft:(BOOL)movedLEft;
+didChangeLeftPosition:(NSTimeInterval)startTime
+      rightPosition:(NSTimeInterval)endTime
+             offset:(NSTimeInterval)offset
+          movedLeft:(BOOL)movedLeft;
 
 - (void)trimmerViewDidEndEditing:(nonnull ICGVideoTrimmerView *)trimmerView;
 
-- (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView didMoveTrackerToTime:(CGFloat)time;
+- (void)trimmerView:(nonnull ICGVideoTrimmerView *)trimmerView didMoveTrackerToTime:(NSTimeInterval)time;
 
 @end
 
-
+NS_ASSUME_NONNULL_END
