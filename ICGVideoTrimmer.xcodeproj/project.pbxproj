@@ -55,6 +55,7 @@
 		DE4F1F6B1A67C9BB00478F77 /* ICGVideoTrimmerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ICGVideoTrimmerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE4F1F701A67C9BB00478F77 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE4F1F711A67C9BB00478F77 /* ICGVideoTrimmerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICGVideoTrimmerTests.m; sourceTree = "<group>"; };
+		E01A58AB21B920FB00C7F036 /* ICGVideoTrimmer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ICGVideoTrimmer.podspec; sourceTree = SOURCE_ROOT; };
 		E0EA1954202F2F4700830931 /* video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video.mp4; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -117,6 +118,7 @@
 		DE4F1F541A67C9BB00478F77 /* ICGVideoTrimmer */ = {
 			isa = PBXGroup;
 			children = (
+				E01A58AB21B920FB00C7F036 /* ICGVideoTrimmer.podspec */,
 				2CE63A071A74C43500B804F2 /* Source */,
 				DE4F1F591A67C9BB00478F77 /* AppDelegate.h */,
 				DE4F1F5A1A67C9BB00478F77 /* AppDelegate.m */,
