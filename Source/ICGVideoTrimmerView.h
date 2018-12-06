@@ -22,10 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) UIColor *themeColor;
 
 // Maximum length for the trimmed video
-@property (assign, nonatomic) CGFloat maxDuration;
+@property (nonatomic) CGFloat maxDuration;
 
 // Minimum length for the trimmed video
-@property (assign, nonatomic) CGFloat minDuration;
+@property (nonatomic) CGFloat minDuration;
 
 // Current start time
 @property (nonatomic) CGFloat startTime;
@@ -34,10 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) CGFloat endTime;
 
 // Show ruler view on the trimmer view or not
-@property (assign, nonatomic) BOOL showsRulerView;
+@property (nonatomic) BOOL showsRulerView;
 
 // Number of seconds between
-@property (assign, nonatomic) NSInteger rulerLabelInterval;
+@property (nonatomic) NSInteger rulerLabelInterval;
 
 // Customize color for tracker
 @property (strong, nonatomic) UIColor *trackerColor;
@@ -49,10 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic, nullable) UIImage *rightThumbImage;
 
 // Custom width for the top and bottom borders
-@property (assign, nonatomic) CGFloat borderWidth;
+@property (nonatomic) CGFloat borderWidth;
 
 // Custom width for thumb
-@property (assign, nonatomic) CGFloat thumbWidth;
+@property (nonatomic) CGFloat thumbWidth;
 
 // Tracker view
 @property (readonly, nonatomic) UIView *trackerView;
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithFrame:(CGRect)frame asset:(AVAsset *)asset delegate:(id<ICGVideoTrimmerDelegate>) delegate NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithFrame:(CGRect)frame asset:(AVAsset *)asset delegate:(id<ICGVideoTrimmerDelegate> _Nullable) delegate NS_DESIGNATED_INITIALIZER;
 
 - (void)resetSubviews;
 

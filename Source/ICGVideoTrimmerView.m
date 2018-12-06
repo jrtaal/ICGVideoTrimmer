@@ -50,8 +50,6 @@
 @property (assign, nonatomic) BOOL isDraggingRightOverlayView;
 @property (assign, nonatomic) BOOL isDraggingLeftOverlayView;
 
-
-@property (strong, nonatomic) UIView *trackerView;
 @property (strong, nonatomic) UIView *topBorder;
 @property (strong, nonatomic) UIView *bottomBorder;
 
@@ -75,8 +73,9 @@
     CGFloat _endTime;
     AVAsset * _asset;
     BOOL _panningTracker;
-    UIPanGestureRecognizer * _trackerGestureRecognizer;
 }
+
+@synthesize trackerView = _trackerView;
 
 #pragma mark - Initiation
 
@@ -88,13 +87,10 @@
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder
 {
-    _themeColor = [UIColor lightGrayColor];
-    return [super initWithCoder:aDecoder];
-}
+    if (!(self = [super initWithCoder:aDecoder])) return nil;
 
-- (instancetype)initWithAsset:(AVAsset *)asset delegate:(id<ICGVideoTrimmerDelegate>) delegate
-{
-    return [self initWithFrame:CGRectZero asset:asset delegate:delegate];
+    [self setDefaults];
+    return self;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame asset:(AVAsset *)asset delegate:(id<ICGVideoTrimmerDelegate>) delegate
@@ -103,9 +99,103 @@
     if (self) {
         _delegate = delegate;
         _asset = asset;
+        [self setDefaults];
+        [self loadViews];
         [self resetSubviews];
     }
     return self;
+}
+
+-(void)setDefaults {
+    _maxDuration = 15.0;
+    _minDuration = 3.0;
+    _trackerColor = [UIColor whiteColor];
+    _borderWidth =  2.0;
+    _thumbWidth = 15.0;
+    _rulerLabelInterval = 5.0;
+    _themeColor = [UIColor lightGrayColor];
+}
+
+-(void)awakeFromNib {
+    [super awakeFromNib];
+    [self loadViews];
+}
+
+#define EDGE_EXTENSION_FOR_THUMB 30
+
+-(void)loadViews {
+    CGFloat radius = 5.0;
+
+    self.layer.masksToBounds = true;
+    self.layer.cornerRadius = radius;
+
+    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
+    [self addSubview:self.scrollView];
+    [self.scrollView setDelegate:self];
+    [self.scrollView setShowsHorizontalScrollIndicator:NO];
+
+    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame))];
+    [self.scrollView setContentSize:self.contentView.frame.size];
+    [self.scrollView addSubview:self.contentView];
+
+    // add borders
+    self.topBorder = [[UIView alloc] init];
+    [self.topBorder setBackgroundColor:self.themeColor];
+    [self addSubview:self.topBorder];
+    
+    self.bottomBorder = [[UIView alloc] init];
+    [self.bottomBorder setBackgroundColor:self.themeColor];
+    [self addSubview:self.bottomBorder];
+
+    
+    // add left overlay view
+    self.leftOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(0, 0, 100, CGRectGetHeight(self.frame))];
+    self.leftOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, 0, 0, -(EDGE_EXTENSION_FOR_THUMB));
+    CGRect leftThumbFrame = CGRectMake(100-self.thumbWidth, 0, self.thumbWidth, CGRectGetHeight(self.frame));
+    if (self.leftThumbImage) {
+        self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame thumbImage:self.leftThumbImage];
+    } else {
+        self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame color:self.themeColor right:NO];
+    }
+    self.leftThumbView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    self.leftThumbView.radius = radius;
+    
+    self.clipsToBounds = false;
+    
+    [self.leftThumbView.layer setMasksToBounds:YES];
+    [self.leftOverlayView addSubview:self.leftThumbView];
+    [self.leftOverlayView setUserInteractionEnabled:YES];
+    [self.leftOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
+    [self addSubview:self.leftOverlayView];
+
+    
+    CGFloat rightViewFrameX = CGRectGetWidth(self.framesView.frame) < CGRectGetWidth(self.frame) ? CGRectGetMaxX(self.framesView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
+    self.rightOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame))];
+    self.rightOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, -(EDGE_EXTENSION_FOR_THUMB), 0, 0);
+    CGRect rightThumbFrame = CGRectMake(0, 0, self.thumbWidth, CGRectGetHeight(self.frame));
+    if (self.rightThumbImage) {
+        self.rightThumbView = [[ICGThumbView alloc] initWithFrame:rightThumbFrame thumbImage:self.rightThumbImage];
+    } else {
+        self.rightThumbView = [[ICGThumbView alloc] initWithFrame:rightThumbFrame color:self.themeColor right:YES];
+    }
+    self.rightThumbView.radius = radius;
+    
+    [self.rightThumbView.layer setMasksToBounds:YES];
+    [self.rightOverlayView addSubview:self.rightThumbView];
+    [self.rightOverlayView setUserInteractionEnabled:YES];
+    [self.rightOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
+    [self addSubview:self.rightOverlayView];
+    
+    self->_trackerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 20, self.frame.size.height)];
+    self.trackerView.backgroundColor = [UIColor whiteColor];
+    self.trackerView.layer.masksToBounds = true;
+    [self addSubview:self.trackerView];
+    UIPanGestureRecognizer * trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
+    [self.trackerView addGestureRecognizer:trackerGestureRecognizer];
+    self.trackerView.userInteractionEnabled = true;
+    
+    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(moveOverlayView:)];
+    [self addGestureRecognizer:panGestureRecognizer];
 }
 
 - (void)setThemeColor:(UIColor *)themeColor {
@@ -138,35 +228,7 @@
 //    return _themeColor ?: [UIColor lightGrayColor];
 //}
 
-- (CGFloat)maxDuration
-{
-    return _maxDuration ?: 15;
-}
 
-- (CGFloat)minDuration
-{
-    return _minDuration ?: 3;
-}
-
-- (UIColor *)trackerColor
-{
-    return _trackerColor ?: [UIColor whiteColor];
-}
-
-- (CGFloat)borderWidth
-{
-    return _borderWidth ?: 2;
-}
-
-- (CGFloat)thumbWidth
-{
-    return _thumbWidth ?: 15;
-}
-
-- (NSInteger) rulerLabelInterval
-{
-    return _rulerLabelInterval ?: 5;
-}
 -(void) didMoveToWindow {
     [super didMoveToWindow]; // (does nothing by default)
     if (self.window == nil) {
@@ -177,13 +239,8 @@
 }
 
 
-
-#define EDGE_EXTENSION_FOR_THUMB 30
 - (void)resetSubviews
 {
-    CGFloat radius = 5.0;
-    self.layer.masksToBounds = true;
-    self.layer.cornerRadius = radius;
 
     CALayer *sideMaskingLayer = [CALayer new];
     sideMaskingLayer.backgroundColor = [UIColor blackColor].CGColor;
@@ -191,18 +248,11 @@
     self.layer.mask = sideMaskingLayer;
     
     [self setBackgroundColor:[UIColor clearColor]];
+        
+    self.scrollView.frame = CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame));
+    self.contentView.frame = CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame));
     
-    [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    
-    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
-    [self addSubview:self.scrollView];
-    [self.scrollView setDelegate:self];
-    [self.scrollView setShowsHorizontalScrollIndicator:NO];
-    
-    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), CGRectGetHeight(self.scrollView.frame))];
-    [self.scrollView setContentSize:self.contentView.frame.size];
-    [self.scrollView addSubview:self.contentView];
-    
+    [self.framesView removeFromSuperview];
     CGFloat ratio = self.showsRulerView ? 0.7 : 1.0;
     //self.scrollView.contentInset = UIEdgeInsetsMake(0, self.thumbWidth, 0, self.thumbWidth);
     self.framesView = [[UIView alloc] initWithFrame:CGRectMake(self.thumbWidth, 0, CGRectGetWidth(self.contentView.frame)-(2*self.thumbWidth), CGRectGetHeight(self.contentView.frame)*ratio)];
@@ -217,75 +267,19 @@
         [self.contentView addSubview:rulerView];
     }
     
-    // add borders
-    self.topBorder = [[UIView alloc] init];
-    [self.topBorder setBackgroundColor:self.themeColor];
-    [self addSubview:self.topBorder];
-    
-    self.bottomBorder = [[UIView alloc] init];
-    [self.bottomBorder setBackgroundColor:self.themeColor];
-    [self addSubview:self.bottomBorder];
     
     // width for left and right overlay views
     self.overlayWidth =  CGRectGetWidth(self.frame) - (self.minDuration * self.widthPerSecond);
     
     // add left overlay view
-    self.leftOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(self.thumbWidth - self.overlayWidth, 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame))];
-    self.leftOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, 0, 0, -(EDGE_EXTENSION_FOR_THUMB));
-    CGRect leftThumbFrame = CGRectMake(self.overlayWidth-self.thumbWidth, 0, self.thumbWidth, CGRectGetHeight(self.framesView.frame));
-    if (self.leftThumbImage) {
-        self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame thumbImage:self.leftThumbImage];
-    } else {
-        self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame color:self.themeColor right:NO];
-    }
-    self.leftThumbView.radius = radius;
-
-
-    self.clipsToBounds = false;
-    
-    
-    [self.leftThumbView.layer setMasksToBounds:YES];
-    [self.leftOverlayView addSubview:self.leftThumbView];
-    [self.leftOverlayView setUserInteractionEnabled:YES];
-    [self.leftOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
-    [self addSubview:self.leftOverlayView];
+    self.leftOverlayView.frame = CGRectMake(self.thumbWidth - self.overlayWidth, 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame));
     
     // add right overlay view
     CGFloat rightViewFrameX = CGRectGetWidth(self.framesView.frame) < CGRectGetWidth(self.frame) ? CGRectGetMaxX(self.framesView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
-    self.rightOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame))];
-    self.rightOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, -(EDGE_EXTENSION_FOR_THUMB), 0, 0);
+    self.rightOverlayView.frame = CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame));
     
-    if (self.rightThumbImage) {
-        self.rightThumbView = [[ICGThumbView alloc] initWithFrame:CGRectMake(0, 0, self.thumbWidth, CGRectGetHeight(self.framesView.frame)) thumbImage:self.rightThumbImage];
-    } else {
-        self.rightThumbView = [[ICGThumbView alloc] initWithFrame:CGRectMake(0, 0, self.thumbWidth, CGRectGetHeight(self.framesView.frame)) color:self.themeColor right:YES];
-    }
-    self.rightThumbView.radius = radius;
-
-    [self.rightThumbView.layer setMasksToBounds:YES];
-    [self.rightOverlayView addSubview:self.rightThumbView];
-    [self.rightOverlayView setUserInteractionEnabled:YES];
-    [self.rightOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
-    [self addSubview:self.rightOverlayView];
+    self.trackerView.frame = CGRectMake(0, -5, self.thumbWidth, CGRectGetHeight(self.framesView.frame) + 10);
     
-    if (! [self.trackerColor isEqual:[UIColor clearColor]]) {
-        self.trackerView = [[UIView alloc] initWithFrame:CGRectMake(0, -5, self.thumbWidth, CGRectGetHeight(self.framesView.frame) + 10)];
-            self.trackerView.backgroundColor = self.trackerColor;
-        self.trackerView.layer.masksToBounds = true;
-            //self.trackerView.layer.cornerRadius = 2;
-        [self addSubview:self.trackerView];
-
-        _trackerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panTracker:)];
-        for (UIGestureRecognizer * rec in self.trackerView.gestureRecognizers) {
-            [self.trackerView removeGestureRecognizer:rec];
-        }
-        [self.trackerView addGestureRecognizer:_trackerGestureRecognizer];
-        self.trackerView.userInteractionEnabled = true;
-            //self.trackerView.layer.masksToBounds = false;
-    }
-
-    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(moveOverlayView:)];
-    [self addGestureRecognizer:panGestureRecognizer];
     
     [self updateBorderFrames];
     [self notifyDelegateOfDidChange];
@@ -438,7 +432,7 @@
     if ( flag == YES ) {
         self.trackerView.hidden = YES;
     } else {
-        self.trackerView.alpha = 0;
+        self.trackerView.alpha = 0.0;
         self.trackerView.hidden = NO;
         [UIView animateWithDuration:.3 animations:^{
             self.trackerView.alpha = 1;
