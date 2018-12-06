@@ -150,13 +150,13 @@
     // add left overlay view
     self.leftOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(0, 0, 100, CGRectGetHeight(self.frame))];
     self.leftOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, 0, 0, -(EDGE_EXTENSION_FOR_THUMB));
-    CGRect leftThumbFrame = CGRectMake(100-self.thumbWidth, 0, self.thumbWidth, CGRectGetHeight(self.frame));
+    CGRect leftThumbFrame = CGRectMake(100 - self.thumbWidth, 0, self.thumbWidth, CGRectGetHeight(self.frame));
     if (self.leftThumbImage) {
         self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame thumbImage:self.leftThumbImage];
     } else {
         self.leftThumbView = [[ICGThumbView alloc] initWithFrame:leftThumbFrame color:self.themeColor right:NO];
     }
-    self.leftThumbView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    self.leftThumbView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
     self.leftThumbView.radius = radius;
     
     self.clipsToBounds = false;
@@ -167,9 +167,8 @@
     [self.leftOverlayView setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.6]];
     [self addSubview:self.leftOverlayView];
 
-    
     CGFloat rightViewFrameX = CGRectGetWidth(self.framesView.frame) < CGRectGetWidth(self.frame) ? CGRectGetMaxX(self.framesView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
-    self.rightOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame))];
+    self.rightOverlayView = [[HitTestView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.frame))];
     self.rightOverlayView.hitTestEdgeInsets = UIEdgeInsetsMake(0, -(EDGE_EXTENSION_FOR_THUMB), 0, 0);
     CGRect rightThumbFrame = CGRectMake(0, 0, self.thumbWidth, CGRectGetHeight(self.frame));
     if (self.rightThumbImage) {
@@ -177,6 +176,7 @@
     } else {
         self.rightThumbView = [[ICGThumbView alloc] initWithFrame:rightThumbFrame color:self.themeColor right:YES];
     }
+    self.rightThumbView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleHeight;
     self.rightThumbView.radius = radius;
     
     [self.rightThumbView.layer setMasksToBounds:YES];
