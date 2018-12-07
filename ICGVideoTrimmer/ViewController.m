@@ -56,6 +56,8 @@
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnVideoLayer:)];
     [self.videoLayer addGestureRecognizer:tap];
+    
+    self.trimmerView.edgeOutset = UIEdgeInsetsMake(-20, 0, -20, 0);
 
 }
 

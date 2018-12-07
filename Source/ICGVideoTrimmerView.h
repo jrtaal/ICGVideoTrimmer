@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Tracker view
 @property (readonly, nonatomic) UIView *trackerView;
 
+@property (nonatomic) UIEdgeInsets edgeOutset;
 
 @property (weak, nonatomic, nullable) id<ICGVideoTrimmerDelegate> delegate;
 

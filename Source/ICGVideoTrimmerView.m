@@ -113,6 +113,7 @@
     _thumbWidth = 15.0;
     _rulerLabelInterval = 5.0;
     _themeColor = [UIColor lightGrayColor];
+    _edgeOutset = UIEdgeInsetsMake(-10, 0, -10, 0);
 }
 
 -(void)awakeFromNib {
@@ -238,7 +239,7 @@
 
     CALayer *sideMaskingLayer = [CALayer new];
     sideMaskingLayer.backgroundColor = [UIColor blackColor].CGColor;
-    sideMaskingLayer.frame = CGRectMake(0, -10, self.frame.size.width, self.frame.size.height + 20);
+    sideMaskingLayer.frame = UIEdgeInsetsInsetRect(self.bounds, _edgeOutset);
     self.layer.mask = sideMaskingLayer;
     
     [self setBackgroundColor:[UIColor clearColor]];
@@ -272,7 +273,7 @@
     CGFloat rightViewFrameX = CGRectGetWidth(self.framesView.frame) < CGRectGetWidth(self.frame) ? CGRectGetMaxX(self.framesView.frame) : CGRectGetWidth(self.frame) - self.thumbWidth;
     self.rightOverlayView.frame = CGRectMake(CGRectGetWidth(self.frame) < rightViewFrameX ? CGRectGetWidth(self.framesView.frame) : rightViewFrameX , 0, self.overlayWidth, CGRectGetHeight(self.framesView.frame));
     
-    self.trackerView.frame = CGRectMake(0, -5, self.thumbWidth, CGRectGetHeight(self.framesView.frame) + 10);
+    self.trackerView.frame = CGRectMake(0, _edgeOutset.top, self.thumbWidth, CGRectGetHeight(self.framesView.frame) - _edgeOutset.top - _edgeOutset.bottom);
     
     
     [self updateBorderFrames];
